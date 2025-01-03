@@ -2,6 +2,8 @@
 
 /// # JvGeo's Documentation
 /// 
+/// {:toc}
+///
 /// ## Usage example
 ///
 /// ```html
