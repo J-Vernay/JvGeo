@@ -40,6 +40,11 @@ document.addEventListener("jvgeo-ready", evt => {
 
 And voilà! The interactive drawing is shown. 😎
 
+<noscript><strong>
+You need Javascript activated to see JvGeo interactive demo.
+If you are on GitHub viewer, <a href="https://j-vernay.github.io/JvGeo/">go to the website instead!</a>
+</strong></noscript>
+
 <div id="div-example" style="width:600px; border:2px solid #CCC"></div>
 <script>
 document.addEventListener("jvgeo-ready", evt => {
@@ -56,5 +61,3 @@ document.addEventListener("jvgeo-ready", evt => {
 })
 </script>
 <script src="jvgeo.js" defer></script>
-
-<noscript><strong>You need Javascript activated to see JvGeo interactive demo.</strong></noscript>
