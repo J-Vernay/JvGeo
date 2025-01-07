@@ -66,11 +66,9 @@ class JvGeo {
     #drawCtx
     #bInsideUserfuncDraw
     
-    // Mouse tracking
-    #mousePos
-    #mouseClicked
-    #mouseDown
-    #mouseDragPoint
+    // Mouse/Touch tracking
+    #pointers
+    #pointerPos
 
     /// ### JvGeo:Init(divId, width, height)
     ///
@@ -134,6 +132,7 @@ class JvGeo {
         this.#domCanvas = this.#domContainer.appendChild(document.createElement("canvas"))
         this.#domCanvas.style.width = "100%"
         this.#domCanvas.style.height = "100%"
+        this.#domCanvas.style.touchAction = "none"
         this.#domCanvas.width = this.#domCanvas.clientWidth
         this.#domCanvas.height = this.#domCanvas.clientHeight
 
@@ -141,23 +140,50 @@ class JvGeo {
 
         this.#drawCtx = this.#domCanvas.getContext("2d")
         this.#bInsideUserfuncDraw = false
+
+        // Using pointers API for both mouse and touches.
+
+        this.#pointers = {}
+        this.#pointerPos = null
         
-        // Mouse tracking
-
-        this.#mousePos = {}
-        this.#mouseClicked = false
-        this.#mouseDown = false
-        this.#mouseDragPoint = null
-
-        this.#domCanvas.onmousedown = (evt) => {
-            this.#mouseClicked = (evt.buttons === 1)
-            this.#mouseDown = (evt.buttons & 1)
-            this.#mousePos = { x: evt.offsetX, y: evt.offsetY }
+        this.#domCanvas.onpointerdown = (evt) => {
+            evt.preventDefault()
+            this.#pointers[evt.pointerId] = {
+                originX: evt.offsetX,
+                originY: evt.offsetY,
+                moveX: 0,
+                moveY: 0,
+                dragPoint: null,
+                dragPointOriginX: null,
+                dragPointOriginY: null
+            }
+            this.#pointerPos = { x: evt.offsetX, y: evt.offsetY }
         }
-    
-        this.#domCanvas.onmousemove = (evt) => {
-            this.#mouseDown = (evt.buttons & 1)
-            this.#mousePos = { x: evt.offsetX, y: evt.offsetY }
+
+        this.#domCanvas.onpointermove = (evt) => {
+            evt.preventDefault()
+            const pointer  = this.#pointers[evt.pointerId]
+            if (pointer) {
+                pointer.moveX = evt.offsetX - pointer.originX
+                pointer.moveY = evt.offsetY - pointer.originY
+            }
+            this.#pointerPos = { x: evt.offsetX, y: evt.offsetY }
+        }
+
+        this.#domCanvas.onpointerup = (evt) => {
+            evt.preventDefault()
+            delete this.#pointers[evt.pointerId]
+            this.#pointerPos = { x: evt.offsetX, y: evt.offsetY }
+        }
+        this.#domCanvas.onpointercancel = this.#domCanvas.onpointerup
+
+        this.#domCanvas.onpointerout = (evt) => {
+            evt.preventDefault()
+            delete this.#pointers[evt.pointerId]
+            for (const _ in this.#pointers) {
+                return // Return if dict is not empty
+            }
+            this.#pointerPos = null
         }
     }
 
@@ -282,6 +308,8 @@ class JvGeo {
         while (true) {
             await new Promise(requestAnimationFrame)
 
+            // Resize if needed
+
             const oldWidth = this.#domCanvas.width
             const newWidth = this.#domCanvas.clientWidth
             const oldHeight = this.#domCanvas.height
@@ -297,6 +325,48 @@ class JvGeo {
                 this.#domCanvas.height = this.#domCanvas.clientHeight
             }
 
+            // Update the drag points
+
+            for (const pointerId in this.#pointers) {
+                const pointer = this.#pointers[pointerId]
+                if (pointer.dragPoint === null) {
+                    // Find nearest drag point
+                    let minDist = Infinity
+                    for (const name in this.#dragPoints) {
+                        const dragPoint = this.#dragPoints[name]
+                        const dist = Math.hypot(pointer.originX - dragPoint.x, pointer.originY - dragPoint.y)
+                        if (dist < minDist) {
+                            minDist = dist
+                            pointer.dragPoint = dragPoint
+                        }
+                    }
+                    if (pointer.dragPoint === null) {
+                        continue // Not found...
+                    }
+                    pointer.dragPointOriginX = pointer.dragPoint.x
+                    pointer.dragPointOriginY = pointer.dragPoint.y
+                }
+                pointer.dragPoint.x = pointer.dragPointOriginX + pointer.moveX
+                pointer.dragPoint.y = pointer.dragPointOriginY + pointer.moveY
+            }
+
+            // Find nearest point
+
+            let nearestDragPointName = null
+            let minDist = Infinity
+            if (this.#pointerPos) {
+                for (const name in this.#dragPoints) {
+                    const dragPoint = this.#dragPoints[name]
+                    const dist = Math.hypot(this.#pointerPos.x - dragPoint.x, this.#pointerPos.y - dragPoint.y)
+                    if (dist < minDist) {
+                        minDist = dist
+                        nearestDragPointName = name
+                    }
+                }
+            }
+
+            // Create user vars
+
             const userVars = {}
             Object.assign(userVars, this.#dragPoints)
             for (const name in this.#inputRanges) {
@@ -308,18 +378,18 @@ class JvGeo {
                 userVars[name] = domInput.checked
             }
 
+            // Draw
+
             this.#drawCtx.reset()
             this.#bInsideUserfuncDraw = true
             userfuncDraw(userVars)
             for (const name in this.#dragPoints) {
-                this.#DrawDragPoint(this.#dragPoints[name], name)
+                const bIsNearest = name === nearestDragPointName
+                const pt = this.#dragPoints[name]
+                this.DrawPoint(pt.x, pt.y, name, bIsNearest ? "#88F" : "#00F")
             }
             this.#bInsideUserfuncDraw = false
-            
-            this.#mouseClicked = false
-            if (!this.#mouseDown)
-                this.#mouseDragPoint = null
-            }    
+        }
     }
 
     /// ### JvGeo:DrawSegment(xA, yA, xB, yB, color, thickness)
@@ -415,24 +485,9 @@ class JvGeo {
         ctx.stroke()
     }
 
-    #DrawDragPoint(pt, name) {
-        let bHover = false
-        if (this.#mousePos !== null) {
-            bHover = Math.hypot(pt.x - this.#mousePos.x, pt.y - this.#mousePos.y) <= 8
-            if (bHover && this.#mouseClicked) {
-                this.#mouseDragPoint = name
-            }
-            if (this.#mouseDown && this.#mouseDragPoint === name) {
-                pt.x = this.#mousePos.x
-                pt.y = this.#mousePos.y
-            }
-        }
-        this.DrawPoint(pt.x, pt.y, name, bHover ? "#88F" : "#00F")
-    }
-    
     /// ### JvGeo:Intersect(x1, y1, x2, y2, x3, y3, x4, y4) -> [xI, yI]
     ///
-    /// Returns **[xI, yI]** the coordinates of the intersection point betwen two lines,
+    /// Returns **[xI, yI]** the coordinates of the intersection point between two lines,
     /// or **[NaN, NaN]** if the two lines never cross (ie. they are parallel).
     ///
     /// - **x1**, **y1**, **x2**, **y2**, (*Number*): Coordinates of the points
@@ -465,7 +520,6 @@ class JvGeo {
         const scale = len / Math.hypot(x, y)
         return [x * scale, y * scale]
     }
-
 
     /// ### JvGeo:NormalizedPerpendicularVec(x, y, len=1.0) -> [xV, yV]
     ///

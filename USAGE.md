@@ -131,7 +131,7 @@ be called from inside the `userfuncDraw` given to `MainLoop()`.
 
 ### JvGeo:Intersect(x1, y1, x2, y2, x3, y3, x4, y4) -> [xI, yI]
 
-Returns **[xI, yI]** the coordinates of the intersection point betwen two lines,
+Returns **[xI, yI]** the coordinates of the intersection point between two lines,
 or **[NaN, NaN]** if the two lines never cross (ie. they are parallel).
 
 - **x1**, **y1**, **x2**, **y2**, (*Number*): Coordinates of the points
