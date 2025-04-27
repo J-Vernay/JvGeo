@@ -14,7 +14,7 @@
 /// ```js
 /// document.addEventListener("jvgeo-ready", evt => {
 ///     const jvgeo = new evt.detail.JvGeo()
-///     jvgeo.Init("div-example", 6, 4)
+///     jvgeo.Init("div-example", 0, 6, 0, 4)
 ///     jvgeo.AddDragPoint("A", 4, 1)
 ///     jvgeo.AddDragPoint("B", 1, 2)
 ///     jvgeo.AddDragPoint("C", 3, 3)
@@ -72,15 +72,15 @@ class JvGeo {
     #pointers
     #pointerPos
 
-    /// ### JvGeo:Init(divId, width, height)
+    /// ### JvGeo:Init(divId, xMin, xMax, yMin, yMax)
     ///
     /// Setup the UI inside the DOM container identified by `divId`.
-    /// The container's `aspect-ratio` is forced to `width/height`.
+    /// The container's `aspect-ratio` is forced to `(xMax-xMin)/(yMax-yMin)`.
     /// The size of the container determines the drawing area.
     ///
     /// - **divId** (*String*): ID of the DOM element which will contain the drawings.
     ///   The size of the container determines the drawing area.
-    /// - **width**, **height** (*Number*): Logical dimensions.
+    /// - **xMin**, **xMax**, **yMin**, **yMax** (*Number*): Logical dimensions.
     ///
     Init(divId, xMin, xMax, yMin, yMax) {
         this.#xMin = xMin
