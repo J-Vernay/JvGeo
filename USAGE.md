@@ -48,16 +48,34 @@ The size of the container determines the drawing area.
 
 - **divId** (*String*): ID of the DOM element which will contain the drawings.
   The size of the container determines the drawing area.
-- **width**, **height** (*Number*): Logical dimensions, only used as relative scale
-  for the initial placement of the drag points.
+- **width**, **height** (*Number*): Logical dimensions.
+
+### JvGeo:CoordToPixel(x,y)
+
+Returns `[x,y]`, the corresponding coordinates in pixels.
+JvGeo API uses logical coordinates, thus this method is for rendering stuff on your own.
+
+### JvGeo:PixelToCoord(x,y)
+
+Returns `[x,y]`, the corresponding logical coordinates.
+JvGeo API uses logical coordinates, thus this method is helpful for sending your own events.
+
+### JvGeo:ScaleToCoord(v)
+
+Converts a distance from pixel units to logical units.
+JvGeo API uses logical coordinates, thus this may be useful if you have your own pixel logic.
+
+### JvGeo:ScaleToPixel(v)
+
+Converts a distance from logical units to pixel units.
+JvGeo API uses logical coordinates, thus this may be useful if you have your own pixel logic.
 
 ### JvGeo:AddDragPoint(name, initX, initY)
 
 Adds a point draggable by user to interact with the drawings.
 
 - **name** (*String*): Name of the draggable point, used for both display and identification.
-- **initX**, **initY** (*Number*): Initial position, relative to
-  `width` and `height` given to  `Init()`.
+- **initX**, **initY** (*Number*): Initial position, in logical coordinates.
 
 ### JvGeo:AddInputRange(name, min, max, initValue, text)
 
@@ -84,19 +102,19 @@ Reinitializes the values of interactive elements (checkboxes, input ranges, drag
 
 Setup the main loop which updates the drawing according to the user interactions.
 
-- **userfuncDraw**: Function called every animation frame, 
+- **userfuncDraw**: Function called every animation frame,
   which is given a dictionary as first argument containing the values
   of all interactive elements, key-ed by the `name` given to
   `AddDragPoint()`, `AddInputRange()`, `AddCheckbox`...
-  The coordinates of the draggable points are expressed in pixels.
+  The positions of the draggable points are expressed in logical coordinate.
 
 ### JvGeo:DrawSegment(xA, yA, xB, yB, color, thickness)
 
 Draws a segment between the given coordinates. This function must
 be called from inside the `userfuncDraw` given to `MainLoop()`.
 
-- **xA**, **yA**, **xB**, **yB** (*Number*): Coordinates
-  of the segment's endpoints, in pixels.
+- **xA**, **yA**, **xB**, **yB** (*Number*):
+  Logical coordinates of the segment's endpoints, in pixels.
 - **color** (*String* = `"#000"`): CSS color to be used for the stroke.
 - **thickness** (*Number* = `2`): Thickness, in pixels.
 
@@ -105,7 +123,7 @@ be called from inside the `userfuncDraw` given to `MainLoop()`.
 Draws a point at given coordinates. This function must
 be called from inside the `userfuncDraw` given to `MainLoop()`.
 
-- **x**, **y** (*Number*): Coordinates of the point, in pixels.
+- **x**, **y** (*Number*): Logical coordinates of the point.
 - **color** (*String*): CSS color used to fill the point.
 
 ### JvGeo:DrawLine(xA, yA, xB, yB, color, thickness)
@@ -113,8 +131,8 @@ be called from inside the `userfuncDraw` given to `MainLoop()`.
 Draws a line passing through the given coordinates. This function must
 be called from inside the `userfuncDraw` given to `MainLoop()`.
 
-- **xA**, **yA**, **xB**, **yB** (*Number*): Coordinates
-  of the points defining the line, in pixels.
+- **xA**, **yA**, **xB**, **yB** (*Number*):
+   Logical coordinates of the points defining the line, in pixels.
 - **color** (*String* = `"#000"`): CSS color to be used for the stroke.
 - **thickness** (*Number* = `2`): Thickness, in pixels.
 
@@ -123,8 +141,8 @@ be called from inside the `userfuncDraw` given to `MainLoop()`.
 Draws the triangle defined by the given coordinates. This function must
 be called from inside the `userfuncDraw` given to `MainLoop()`.
 
-- **xA**, **yA**, **xB**, **yB**, **xC**, **yC** (*Number*): Coordinates
-  of the points defining the triangle, in pixels.
+- **xA**, **yA**, **xB**, **yB**, **xC**, **yC** (*Number*):
+  Logical coordinates of the points defining the triangle, in pixels.
 - **colorFG** (*String* = `"#000"`): CSS color to be used for the stroke.
 - **colorBG** (*String* = `"#0004"`): CSS color to be used for the filling.
 - **thickness** (*Number* = `2`): Thickness, in pixels.
@@ -135,9 +153,9 @@ Returns **[xI, yI]** the coordinates of the intersection point between two lines
 or **[NaN, NaN]** if the two lines never cross (ie. they are parallel).
 
 - **x1**, **y1**, **x2**, **y2**, (*Number*): Coordinates of the points
-  defining the first line, in pixels.
+  defining the first line.
 - **x3**, **y3**, **x4**, **y4**, (*Number*): Coordinates of the points
-  defining the second line, in pixels.
+  defining the second line.
 
 ### JvGeo:NormalizedParallelVec(x, y, len=1.0) -> [xV, yV]
 

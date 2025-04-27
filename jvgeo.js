@@ -80,8 +80,7 @@ class JvGeo {
     ///
     /// - **divId** (*String*): ID of the DOM element which will contain the drawings.
     ///   The size of the container determines the drawing area.
-    /// - **width**, **height** (*Number*): Logical dimensions, only used as relative scale
-    ///   for the initial placement of the drag points.
+    /// - **width**, **height** (*Number*): Logical dimensions.
     ///
     Init(divId, width, height) {
         this.#xMin = 0
@@ -151,32 +150,35 @@ class JvGeo {
 
         this.#domCanvas.onpointerdown = (evt) => {
             evt.preventDefault()
+            const [x, y] = this.PixelToCoord(evt.offsetX, evt.offsetY)
             this.#pointers[evt.pointerId] = {
-                originX: evt.offsetX,
-                originY: evt.offsetY,
+                originX: x,
+                originY: y,
                 moveX: 0,
                 moveY: 0,
                 dragPoint: null,
                 dragPointOriginX: null,
                 dragPointOriginY: null
             }
-            this.#pointerPos = { x: evt.offsetX, y: evt.offsetY }
+            this.#pointerPos = { x, y }
         }
 
         this.#domCanvas.onpointermove = (evt) => {
             evt.preventDefault()
+            const [x, y] = this.PixelToCoord(evt.offsetX, evt.offsetY)
             const pointer = this.#pointers[evt.pointerId]
             if (pointer) {
-                pointer.moveX = evt.offsetX - pointer.originX
-                pointer.moveY = evt.offsetY - pointer.originY
+                pointer.moveX = x - pointer.originX
+                pointer.moveY = y - pointer.originY
             }
-            this.#pointerPos = { x: evt.offsetX, y: evt.offsetY }
+            this.#pointerPos = { x, y }
         }
 
         this.#domCanvas.onpointerup = (evt) => {
             evt.preventDefault()
             delete this.#pointers[evt.pointerId]
-            this.#pointerPos = { x: evt.offsetX, y: evt.offsetY }
+            const [x, y] = this.PixelToCoord(evt.offsetX, evt.offsetY)
+            this.#pointerPos = { x, y }
         }
         this.#domCanvas.onpointercancel = this.#domCanvas.onpointerup
 
@@ -214,18 +216,34 @@ class JvGeo {
         ]
     }
 
+    /// ### JvGeo:ScaleToCoord(v)
+    ///
+    /// Converts a distance from pixel units to logical units.
+    /// JvGeo API uses logical coordinates, thus this may be useful if you have your own pixel logic.
+    ///
+    ScaleToCoord(v) {
+        return v * (this.#yMax - this.#yMin) / this.#domCanvas.clientHeight
+    }
+
+    /// ### JvGeo:ScaleToPixel(v)
+    ///
+    /// Converts a distance from logical units to pixel units.
+    /// JvGeo API uses logical coordinates, thus this may be useful if you have your own pixel logic.
+    ///
+    ScaleToPixel(v) {
+        return v * this.#domCanvas.clientHeight / (this.#yMax - this.#yMin)
+    }
+
     /// ### JvGeo:AddDragPoint(name, initX, initY)
     ///
     /// Adds a point draggable by user to interact with the drawings.
     ///
     /// - **name** (*String*): Name of the draggable point, used for both display and identification.
-    /// - **initX**, **initY** (*Number*): Initial position, relative to
-    ///   `width` and `height` given to  `Init()`.
+    /// - **initX**, **initY** (*Number*): Initial position, in logical coordinates.
     ///
     AddDragPoint(name, initX, initY) {
         this.#initDragPoints[name] = { initX, initY }
-        const [x, y] = this.CoordToPixel(initX, initY)
-        this.#dragPoints[name] = { x, y, pointerId: null }
+        this.#dragPoints[name] = { x: initX, y: initY, pointerId: null }
     }
 
     /// ### JvGeo:AddInputRange(name, min, max, initValue, text)
@@ -298,8 +316,7 @@ class JvGeo {
         this.#dragPoints = {}
         for (const name in this.#initDragPoints) {
             const { initX, initY } = this.#initDragPoints[name]
-            const [x, y] = this.CoordToPixel(initX, initY)
-            this.#dragPoints[name] = { x, y, pointerId: null }
+            this.#dragPoints[name] = { x: initX, y: initY, pointerId: null }
         }
         for (const name in this.#initInputRanges) {
             const { min, max, initValue, text } = this.#initInputRanges[name]
@@ -322,7 +339,7 @@ class JvGeo {
     ///   which is given a dictionary as first argument containing the values
     ///   of all interactive elements, key-ed by the `name` given to
     ///   `AddDragPoint()`, `AddInputRange()`, `AddCheckbox`...
-    ///   The coordinates of the draggable points are expressed in pixels.
+    ///   The positions of the draggable points are expressed in logical coordinate.
     ///
     async MainLoop(userfuncDraw) {
         while (true) {
@@ -423,19 +440,21 @@ class JvGeo {
     /// Draws a segment between the given coordinates. This function must
     /// be called from inside the `userfuncDraw` given to `MainLoop()`.
     ///
-    /// - **xA**, **yA**, **xB**, **yB** (*Number*): Coordinates
-    ///   of the segment's endpoints, in pixels.
+    /// - **xA**, **yA**, **xB**, **yB** (*Number*):
+    ///   Logical coordinates of the segment's endpoints, in pixels.
     /// - **color** (*String* = `"#000"`): CSS color to be used for the stroke.
     /// - **thickness** (*Number* = `2`): Thickness, in pixels.
     ///
     DrawSegment(xA, yA, xB, yB, color = "#000", thickness = 2) {
+        const [pxA, pyA] = this.CoordToPixel(xA, yA)
+        const [pxB, pyB] = this.CoordToPixel(xB, yB)
         console.assert(this.#bInsideUserfuncDraw)
         const ctx = this.#drawCtx
         ctx.beginPath()
         ctx.strokeStyle = color
         ctx.lineWidth = thickness
-        ctx.moveTo(xA, yA)
-        ctx.lineTo(xB, yB)
+        ctx.moveTo(pxA, pyA)
+        ctx.lineTo(pxB, pyB)
         ctx.stroke()
     }
 
@@ -444,24 +463,25 @@ class JvGeo {
     /// Draws a point at given coordinates. This function must
     /// be called from inside the `userfuncDraw` given to `MainLoop()`.
     ///
-    /// - **x**, **y** (*Number*): Coordinates of the point, in pixels.
+    /// - **x**, **y** (*Number*): Logical coordinates of the point.
     /// - **color** (*String*): CSS color used to fill the point.
     ///
     DrawPoint(x, y, name, color) {
+        const [px, py] = this.CoordToPixel(x, y)
         console.assert(this.#bInsideUserfuncDraw)
         const ctx = this.#drawCtx
         ctx.beginPath()
         ctx.fillStyle = color
         ctx.strokeStyle = "#000"
         ctx.lineWidth = 2
-        ctx.arc(x, y, 8, 0, 2 * Math.PI)
+        ctx.arc(px, py, 8, 0, 2 * Math.PI)
         ctx.fill()
         ctx.stroke()
         ctx.fillStyle = "#000"
         ctx.font = "bold 16px sans-serif"
         ctx.textAlign = "center"
         ctx.textBaseline = "bottom"
-        ctx.fillText(name, x, y - 2 * 8)
+        ctx.fillText(name, px, py - 2 * 8)
     }
 
     /// ### JvGeo:DrawLine(xA, yA, xB, yB, color, thickness)
@@ -469,14 +489,14 @@ class JvGeo {
     /// Draws a line passing through the given coordinates. This function must
     /// be called from inside the `userfuncDraw` given to `MainLoop()`.
     ///
-    /// - **xA**, **yA**, **xB**, **yB** (*Number*): Coordinates
-    ///   of the points defining the line, in pixels.
+    /// - **xA**, **yA**, **xB**, **yB** (*Number*):
+    ///    Logical coordinates of the points defining the line, in pixels.
     /// - **color** (*String* = `"#000"`): CSS color to be used for the stroke.
     /// - **thickness** (*Number* = `2`): Thickness, in pixels.
     ///
     DrawLine(xA, yA, xB, yB, color = "#000", thickness = 2) {
         const xAB = xB - xA, yAB = yB - yA
-        const lenDiagonal = Math.hypot(this.#domCanvas.clientWidth, this.#domCanvas.clientHeight)
+        const lenDiagonal = Math.hypot(this.#xMax - this.#xMin, this.#yMax - this.#yMin)
         const scale = lenDiagonal / Math.hypot(xAB, yAB)
         this.DrawSegment(xA - xAB * scale, yA - yAB * scale, xA + xAB * scale, yA + yAB * scale, color, thickness)
     }
@@ -486,23 +506,26 @@ class JvGeo {
     /// Draws the triangle defined by the given coordinates. This function must
     /// be called from inside the `userfuncDraw` given to `MainLoop()`.
     ///
-    /// - **xA**, **yA**, **xB**, **yB**, **xC**, **yC** (*Number*): Coordinates
-    ///   of the points defining the triangle, in pixels.
+    /// - **xA**, **yA**, **xB**, **yB**, **xC**, **yC** (*Number*):
+    ///   Logical coordinates of the points defining the triangle, in pixels.
     /// - **colorFG** (*String* = `"#000"`): CSS color to be used for the stroke.
     /// - **colorBG** (*String* = `"#0004"`): CSS color to be used for the filling.
     /// - **thickness** (*Number* = `2`): Thickness, in pixels.
     ///
     DrawTriangle(xA, yA, xB, yB, xC, yC, colorFG = "#000", colorBG = "#0004", thickness = 2) {
+        const [pxA, pyA] = this.CoordToPixel(xA, yA)
+        const [pxB, pyB] = this.CoordToPixel(xB, yB)
+        const [pxC, pyC] = this.CoordToPixel(xC, yC)
         console.assert(this.#bInsideUserfuncDraw)
         const ctx = this.#drawCtx
         ctx.beginPath()
         ctx.fillStyle = colorBG
         ctx.strokeStyle = colorFG
         ctx.lineWidth = thickness
-        ctx.moveTo(xA, yA)
-        ctx.lineTo(xB, yB)
-        ctx.lineTo(xC, yC)
-        ctx.lineTo(xA, yA)
+        ctx.moveTo(pxA, pyA)
+        ctx.lineTo(pxB, pyB)
+        ctx.lineTo(pxC, pyC)
+        ctx.lineTo(pxA, pyA)
         ctx.fill()
         ctx.stroke()
     }
@@ -513,9 +536,9 @@ class JvGeo {
     /// or **[NaN, NaN]** if the two lines never cross (ie. they are parallel).
     ///
     /// - **x1**, **y1**, **x2**, **y2**, (*Number*): Coordinates of the points
-    ///   defining the first line, in pixels.
+    ///   defining the first line.
     /// - **x3**, **y3**, **x4**, **y4**, (*Number*): Coordinates of the points
-    ///   defining the second line, in pixels.
+    ///   defining the second line.
     ///
     Intersect(x1, y1, x2, y2, x3, y3, x4, y4) {
         // Solving

@@ -1,145 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tests for jvgeo.js</title>
 </head>
+
 <body>
 
-<h1>Tests for jvgeo.js</h1>
+    <h1>Tests for jvgeo.js</h1>
 
-<p><a href="https://jvernay.fr/en/blog/polyline-triangulation/">
-These tests are taken from the initial blog post from which JvGeo originated
-</a>.</p>
+    <p><a href="https://jvernay.fr/en/blog/polyline-triangulation/">
+            These tests are taken from the initial blog post from which JvGeo originated
+        </a>.</p>
 
-<h2>Polyline definition</h2>
+    <h2>Polyline definition</h2>
 
-<div id="polyline-def" style="max-height:300px;border: 2px solid #CCC"></div>
-<script>
-document.addEventListener("jvgeo-ready", evt => {
-    const jvgeo = new evt.detail.JvGeo()
-    jvgeo.Init("polyline-def", 8, 4)
-    jvgeo.AddDragPoint("A", 4, 1)
-    jvgeo.AddDragPoint("B", 1, 2)
-    jvgeo.AddDragPoint("C", 3, 3)
-    jvgeo.AddDragPoint("D", 7, 1)
-    jvgeo.AddDragPoint("E", 6, 3)
-    jvgeo.MainLoop(({A,B,C,D,E}) => {
-        jvgeo.DrawSegment(A.x, A.y, B.x, B.y)
-        jvgeo.DrawSegment(B.x, B.y, C.x, C.y)
-        jvgeo.DrawSegment(C.x, C.y, D.x, D.y)
-        jvgeo.DrawSegment(D.x, D.y, E.x, E.y)
-    })
-})
-</script>
+    <div id="polyline-def" style="max-height:300px;border: 2px solid #CCC"></div>
+    <script>
+        document.addEventListener("jvgeo-ready", evt => {
+            const jvgeo = new evt.detail.JvGeo()
+            jvgeo.Init("polyline-def", 8, 4)
+            jvgeo.AddDragPoint("A", 4, 1)
+            jvgeo.AddDragPoint("B", 1, 2)
+            jvgeo.AddDragPoint("C", 3, 3)
+            jvgeo.AddDragPoint("D", 7, 1)
+            jvgeo.AddDragPoint("E", 6, 3)
+            jvgeo.MainLoop(({ A, B, C, D, E }) => {
+                jvgeo.DrawSegment(A.x, A.y, B.x, B.y)
+                jvgeo.DrawSegment(B.x, B.y, C.x, C.y)
+                jvgeo.DrawSegment(C.x, C.y, D.x, D.y)
+                jvgeo.DrawSegment(D.x, D.y, E.x, E.y)
+            })
+        })
+    </script>
 
-<br/>
+    <br />
 
-<h2>Polyline trivial thickness</h2>
+    <h2>Polyline trivial thickness</h2>
 
-<div id="polyline-trivial-rect" style="max-height:300px;border: 2px solid #CCC"></div>
-<script>
-document.addEventListener("jvgeo-ready", evt => {
-    const jvgeo = new evt.detail.JvGeo()
-    jvgeo.Init("polyline-trivial-rect", 8, 4)
-    jvgeo.AddDragPoint("A", 4, 1)
-    jvgeo.AddDragPoint("B", 1, 2)
-    jvgeo.AddDragPoint("C", 3, 3)
-    jvgeo.AddDragPoint("D", 7, 1)
-    jvgeo.AddDragPoint("E", 6, 3)
-    jvgeo.AddInputRange("Thickness", 0, 200, 70, "Thickness = {} px")
-    jvgeo.MainLoop(({A,B,C,D,E,Thickness}) => {
-        jvgeo.DrawSegment(A.x, A.y, B.x, B.y, "#0004", Thickness)
-        jvgeo.DrawSegment(B.x, B.y, C.x, C.y, "#0004", Thickness)
-        jvgeo.DrawSegment(C.x, C.y, D.x, D.y, "#0004", Thickness)
-        jvgeo.DrawSegment(D.x, D.y, E.x, E.y, "#0004", Thickness)
-    })
-})
-</script>
+    <div id="polyline-trivial-rect" style="max-height:300px;border: 2px solid #CCC"></div>
+    <script>
+        document.addEventListener("jvgeo-ready", evt => {
+            const jvgeo = new evt.detail.JvGeo()
+            jvgeo.Init("polyline-trivial-rect", 8, 4)
+            jvgeo.AddDragPoint("A", 4, 1)
+            jvgeo.AddDragPoint("B", 1, 2)
+            jvgeo.AddDragPoint("C", 3, 3)
+            jvgeo.AddDragPoint("D", 7, 1)
+            jvgeo.AddDragPoint("E", 6, 3)
+            jvgeo.AddInputRange("Thickness", 0, 200, 70, "Thickness = {} px")
+            jvgeo.MainLoop(({ A, B, C, D, E, Thickness }) => {
+                jvgeo.DrawSegment(A.x, A.y, B.x, B.y, "#0004", Thickness)
+                jvgeo.DrawSegment(B.x, B.y, C.x, C.y, "#0004", Thickness)
+                jvgeo.DrawSegment(C.x, C.y, D.x, D.y, "#0004", Thickness)
+                jvgeo.DrawSegment(D.x, D.y, E.x, E.y, "#0004", Thickness)
+            })
+        })
+    </script>
 
-<br/>
+    <br />
 
-<h2>Polyline miter thickness</h2>
+    <h2>Polyline miter thickness</h2>
 
-<div id="polyline-main" style="max-height: 500px; border: 2px solid #CCC"></div>
-<script>
-document.addEventListener("jvgeo-ready", evt => {
-    const jvgeo = new evt.detail.JvGeo()
-    jvgeo.Init("polyline-main", 8, 5)
-    jvgeo.AddDragPoint("A", 5, 1)
-    jvgeo.AddDragPoint("B", 3, 3)
-    jvgeo.AddDragPoint("C", 7, 4)
-    jvgeo.AddInputRange("Thickness", 0, 200, 100, "Thickness = {} px")
-    jvgeo.AddCheckbox("bTriangles", false, "Show triangles")
-    jvgeo.MainLoop(({A,B,C,Thickness,bTriangles}) => {
-        const xA = A.x, yA = A.y, xB = B.x, yB = B.y, xC = C.x, yC = C.y
-        // Rectangle for segment [AB]
-        const [xAA1,yAA1] = jvgeo.NormalizedPerpendicularVec(xB - xA, yB - yA, Thickness * 0.5)
-        const xA1 = xA + xAA1, yA1 = yA + yAA1, xA2 = xA - xAA1, yA2 = yA - yAA1
-        const xA1p = xB + xAA1, yA1p = yB + yAA1, xA2p = xB - xAA1, yA2p = yB - yAA1
-        // Rectangle for segment [BC]
-        const [xBB1,yBB1] = jvgeo.NormalizedPerpendicularVec(xC - xB, yC - yB, Thickness * 0.5)
-        const xB1 = xB + xBB1, yB1 = yB + yBB1, xB2 = xB - xBB1, yB2 = yB - yBB1
-        const xB1p = xC + xBB1, yB1p = yC + yBB1, xB2p = xC - xBB1, yB2p = yC - yBB1
-        // Intersections I1=(A1,A1')&(B1,B1') , I2=(A2,A2')&(B2,B2')
-        const [xI1, yI1] = jvgeo.Intersect(xA1, yA1, xA1p, yA1p, xB1, yB1, xB1p, yB1p)
-        const [xI2, yI2] = jvgeo.Intersect(xA2, yA2, xA2p, yA2p, xB2, yB2, xB2p, yB2p)
-        // Clockwise or anticlockwise?
-        const zAB_BC = (yC - yB) * (xB - xA) - (xC - xB) * (yB - yA)
-        // Draw
-        if (bTriangles) {
-            jvgeo.DrawTriangle(xA1, yA1, xA2, yA2, xA1p, yA1p, "#444", "#4444")
-            jvgeo.DrawTriangle(xA2, yA2, xA1p, yA1p, xA2p, yA2p, "#444", "#4444")
-            jvgeo.DrawTriangle(xB1, yB1, xB2, yB2, xB1p, yB1p, "#444", "#4444")
-            jvgeo.DrawTriangle(xB2, yB2, xB1p, yB1p, xB2p, yB2p, "#444", "#4444")
-            if (zAB_BC > 0) {
-                jvgeo.DrawTriangle(xA1p, yA1p, xB1, yB1, xB, yB, "#0CC", "#0CC4")
-                jvgeo.DrawTriangle(xA1p, yA1p, xB1, yB1, xI1, yI1, "#0CC", "#0CC4")
-            }
-            else {
-                jvgeo.DrawTriangle(xA2p, yA2p, xB2, yB2, xB, yB, "#0F0", "#0F04")
-                jvgeo.DrawTriangle(xA2p, yA2p, xB2, yB2, xI2, yI2, "#0F0", "#0F04")
-            }
-        }
-        else {
-            jvgeo.DrawSegment(xA1, yA1, xA2, yA2, "#666")
-            jvgeo.DrawSegment(xA1p, yA1p, xA2p, yA2p, "#666")
-            jvgeo.DrawSegment(xB1, yB1, xB2, yB2, "#666")
-            jvgeo.DrawSegment(xB1p, yB1p, xB2p, yB2p, "#666")
-            jvgeo.DrawLine(xA1, yA1, xA1p, yA1p, "#CCC")
-            jvgeo.DrawLine(xA2, yA2, xA2p, yA2p, "#CCC")
-            jvgeo.DrawLine(xB1, yB1, xB1p, yB1p, "#CCC")
-            jvgeo.DrawLine(xB2, yB2, xB2p, yB2p, "#CCC")
-            if (zAB_BC > 0) {
-                jvgeo.DrawSegment(xA1p, yA1p, xB1, yB1, "#0CC")
-                jvgeo.DrawSegment(xA1p, yA1p, xI1, yI1, "#0CC")
-                jvgeo.DrawSegment(xI1, yI1, xB1, yB1, "#0CC")
-            }
-            else {
-                jvgeo.DrawSegment(xA2p, yA2p, xB2, yB2, "#0F0")
-                jvgeo.DrawSegment(xA2p, yA2p, xI2, yI2, "#0F0")
-                jvgeo.DrawSegment(xI2, yI2, xB2, yB2, "#0F0")
-            }
-            jvgeo.DrawSegment(xA, yA, xB, yB, "#000")
-            jvgeo.DrawSegment(xB, yB, xC, yC, "#000")
-        }
-        jvgeo.DrawPoint(xA1, yA1, "A1", "#888")
-        jvgeo.DrawPoint(xA1p, yA1p, "A1'", "#888")
-        jvgeo.DrawPoint(xA2, yA2, "A2", "#888")
-        jvgeo.DrawPoint(xA2p, yA2p, "A2'", "#888")
-        jvgeo.DrawPoint(xB1, yB1, "B1", "#888")
-        jvgeo.DrawPoint(xB1p, yB1p, "B1'", "#888")
-        jvgeo.DrawPoint(xB2, yB2, "B2", "#888")
-        jvgeo.DrawPoint(xB2p, yB2p, "B2'", "#888")
-        jvgeo.DrawPoint(xI1, yI1, "I1", "#888")
-        jvgeo.DrawPoint(xI2, yI2, "I2", "#888")
-    })
-})
-</script>
+    <div id="polyline-main" style="max-height: 500px; border: 2px solid #CCC"></div>
+    <script>
+        document.addEventListener("jvgeo-ready", evt => {
+            const jvgeo = new evt.detail.JvGeo()
+            jvgeo.Init("polyline-main", 8, 5)
+            jvgeo.AddDragPoint("A", 5, 1)
+            jvgeo.AddDragPoint("B", 3, 3)
+            jvgeo.AddDragPoint("C", 7, 4)
+            jvgeo.AddInputRange("Thickness", 0, 200, 100, "Thickness = {} px")
+            jvgeo.AddCheckbox("bTriangles", false, "Show triangles")
+            jvgeo.MainLoop(({ A, B, C, Thickness, bTriangles }) => {
+                const xA = A.x, yA = A.y, xB = B.x, yB = B.y, xC = C.x, yC = C.y
+                const thickness = jvgeo.ScaleToCoord(Thickness)
+                // Rectangle for segment [AB]
+                const [xAA1, yAA1] = jvgeo.NormalizedPerpendicularVec(xB - xA, yB - yA, thickness * 0.5)
+                const xA1 = xA + xAA1, yA1 = yA + yAA1, xA2 = xA - xAA1, yA2 = yA - yAA1
+                const xA1p = xB + xAA1, yA1p = yB + yAA1, xA2p = xB - xAA1, yA2p = yB - yAA1
+                // Rectangle for segment [BC]
+                const [xBB1, yBB1] = jvgeo.NormalizedPerpendicularVec(xC - xB, yC - yB, thickness * 0.5)
+                const xB1 = xB + xBB1, yB1 = yB + yBB1, xB2 = xB - xBB1, yB2 = yB - yBB1
+                const xB1p = xC + xBB1, yB1p = yC + yBB1, xB2p = xC - xBB1, yB2p = yC - yBB1
+                // Intersections I1=(A1,A1')&(B1,B1') , I2=(A2,A2')&(B2,B2')
+                const [xI1, yI1] = jvgeo.Intersect(xA1, yA1, xA1p, yA1p, xB1, yB1, xB1p, yB1p)
+                const [xI2, yI2] = jvgeo.Intersect(xA2, yA2, xA2p, yA2p, xB2, yB2, xB2p, yB2p)
+                // Clockwise or anticlockwise?
+                const zAB_BC = (yC - yB) * (xB - xA) - (xC - xB) * (yB - yA)
+                // Draw
+                if (bTriangles) {
+                    jvgeo.DrawTriangle(xA1, yA1, xA2, yA2, xA1p, yA1p, "#444", "#4444")
+                    jvgeo.DrawTriangle(xA2, yA2, xA1p, yA1p, xA2p, yA2p, "#444", "#4444")
+                    jvgeo.DrawTriangle(xB1, yB1, xB2, yB2, xB1p, yB1p, "#444", "#4444")
+                    jvgeo.DrawTriangle(xB2, yB2, xB1p, yB1p, xB2p, yB2p, "#444", "#4444")
+                    if (zAB_BC > 0) {
+                        jvgeo.DrawTriangle(xA1p, yA1p, xB1, yB1, xB, yB, "#0CC", "#0CC4")
+                        jvgeo.DrawTriangle(xA1p, yA1p, xB1, yB1, xI1, yI1, "#0CC", "#0CC4")
+                    }
+                    else {
+                        jvgeo.DrawTriangle(xA2p, yA2p, xB2, yB2, xB, yB, "#0F0", "#0F04")
+                        jvgeo.DrawTriangle(xA2p, yA2p, xB2, yB2, xI2, yI2, "#0F0", "#0F04")
+                    }
+                }
+                else {
+                    jvgeo.DrawSegment(xA1, yA1, xA2, yA2, "#666")
+                    jvgeo.DrawSegment(xA1p, yA1p, xA2p, yA2p, "#666")
+                    jvgeo.DrawSegment(xB1, yB1, xB2, yB2, "#666")
+                    jvgeo.DrawSegment(xB1p, yB1p, xB2p, yB2p, "#666")
+                    jvgeo.DrawLine(xA1, yA1, xA1p, yA1p, "#CCC")
+                    jvgeo.DrawLine(xA2, yA2, xA2p, yA2p, "#CCC")
+                    jvgeo.DrawLine(xB1, yB1, xB1p, yB1p, "#CCC")
+                    jvgeo.DrawLine(xB2, yB2, xB2p, yB2p, "#CCC")
+                    if (zAB_BC > 0) {
+                        jvgeo.DrawSegment(xA1p, yA1p, xB1, yB1, "#0CC")
+                        jvgeo.DrawSegment(xA1p, yA1p, xI1, yI1, "#0CC")
+                        jvgeo.DrawSegment(xI1, yI1, xB1, yB1, "#0CC")
+                    }
+                    else {
+                        jvgeo.DrawSegment(xA2p, yA2p, xB2, yB2, "#0F0")
+                        jvgeo.DrawSegment(xA2p, yA2p, xI2, yI2, "#0F0")
+                        jvgeo.DrawSegment(xI2, yI2, xB2, yB2, "#0F0")
+                    }
+                    jvgeo.DrawSegment(xA, yA, xB, yB, "#000")
+                    jvgeo.DrawSegment(xB, yB, xC, yC, "#000")
+                }
+                jvgeo.DrawPoint(xA1, yA1, "A1", "#888")
+                jvgeo.DrawPoint(xA1p, yA1p, "A1'", "#888")
+                jvgeo.DrawPoint(xA2, yA2, "A2", "#888")
+                jvgeo.DrawPoint(xA2p, yA2p, "A2'", "#888")
+                jvgeo.DrawPoint(xB1, yB1, "B1", "#888")
+                jvgeo.DrawPoint(xB1p, yB1p, "B1'", "#888")
+                jvgeo.DrawPoint(xB2, yB2, "B2", "#888")
+                jvgeo.DrawPoint(xB2p, yB2p, "B2'", "#888")
+                jvgeo.DrawPoint(xI1, yI1, "I1", "#888")
+                jvgeo.DrawPoint(xI2, yI2, "I2", "#888")
+            })
+        })
+    </script>
 
-<br/>
+    <br />
 
-<script src="jvgeo.js" defer></script>
+    <script src="jvgeo.js" defer></script>
 </body>
+
 </html>
