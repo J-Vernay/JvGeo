@@ -82,11 +82,11 @@ class JvGeo {
     ///   The size of the container determines the drawing area.
     /// - **width**, **height** (*Number*): Logical dimensions.
     ///
-    Init(divId, width, height) {
-        this.#xMin = 0
-        this.#xMax = width
-        this.#yMin = 0
-        this.#yMax = height
+    Init(divId, xMin, xMax, yMin, yMax) {
+        this.#xMin = xMin
+        this.#xMax = xMax
+        this.#yMin = yMin
+        this.#yMax = yMax
         this.#initDragPoints = {}
         this.#dragPoints = {}
         this.#initInputRanges = {}
@@ -100,7 +100,7 @@ class JvGeo {
 
         this.#domContainer = document.getElementById(divId)
         this.#domContainer.innerHTML = ""
-        this.#domContainer.style.aspectRatio = width / height
+        this.#domContainer.style.aspectRatio = (this.#xMax - this.#xMin) / (this.#yMax - this.#yMin)
         this.#domContainer.style.position = "relative"
 
         this.#domInputs = this.#domContainer.appendChild(document.createElement("div"))
