@@ -44,8 +44,10 @@
 ///
 class JvGeo {
     // Geometry logic
-    #initWidth
-    #initHeight
+    #xMin
+    #xMax
+    #yMin
+    #yMax
     #initDragPoints
     #dragPoints
     #initInputRanges
@@ -82,8 +84,10 @@ class JvGeo {
     ///   for the initial placement of the drag points.
     ///
     Init(divId, width, height) {
-        this.#initWidth = width
-        this.#initHeight = height
+        this.#xMin = 0
+        this.#xMax = width
+        this.#yMin = 0
+        this.#yMax = height
         this.#initDragPoints = {}
         this.#dragPoints = {}
         this.#initInputRanges = {}
@@ -186,6 +190,30 @@ class JvGeo {
         }
     }
 
+    /// ### JvGeo:CoordToPixel(x,y)
+    ///
+    /// Returns `[x,y]`, the corresponding coordinates in pixels.
+    /// JvGeo API uses logical coordinates, thus this method is for rendering stuff on your own.
+    ///
+    CoordToPixel(x, y) {
+        return [
+            ((x - this.#xMin) / (this.#xMax - this.#xMin)) * this.#domCanvas.clientWidth,
+            ((y - this.#yMin) / (this.#yMax - this.#yMin)) * this.#domCanvas.clientHeight
+        ]
+    }
+
+    /// ### JvGeo:PixelToCoord(x,y)
+    ///
+    /// Returns `[x,y]`, the corresponding logical coordinates.
+    /// JvGeo API uses logical coordinates, thus this method is helpful for sending your own events.
+    ///
+    PixelToCoord(x, y) {
+        return [
+            this.#xMin + (x / this.#domCanvas.clientWidth) * (this.#xMax - this.#xMin),
+            this.#yMin + (y / this.#domCanvas.clientHeight) * (this.#yMax - this.#yMin),
+        ]
+    }
+
     /// ### JvGeo:AddDragPoint(name, initX, initY)
     ///
     /// Adds a point draggable by user to interact with the drawings.
@@ -196,8 +224,7 @@ class JvGeo {
     ///
     AddDragPoint(name, initX, initY) {
         this.#initDragPoints[name] = { initX, initY }
-        const x = (initX / this.#initWidth) * this.#domCanvas.clientWidth
-        const y = (initY / this.#initHeight) * this.#domCanvas.clientHeight
+        const [x, y] = this.CoordToPixel(initX, initY)
         this.#dragPoints[name] = { x, y, pointerId: null }
     }
 
@@ -271,8 +298,7 @@ class JvGeo {
         this.#dragPoints = {}
         for (const name in this.#initDragPoints) {
             const { initX, initY } = this.#initDragPoints[name]
-            const x = (initX / this.#initWidth) * this.#domCanvas.clientWidth
-            const y = (initY / this.#initHeight) * this.#domCanvas.clientHeight
+            const [x, y] = this.CoordToPixel(initX, initY)
             this.#dragPoints[name] = { x, y, pointerId: null }
         }
         for (const name in this.#initInputRanges) {
