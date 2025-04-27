@@ -1,7 +1,7 @@
 "use strict"
 
 /// # JvGeo's Documentation
-/// 
+///
 /// * xxx
 /// {:toc}
 ///
@@ -25,7 +25,7 @@
 ///     })
 /// })
 /// ```
-/// 
+///
 /// ## "jvgeo-ready" Event
 /// The `"jvgeo-ready"` event is raised on the global `document` instance.
 /// Instead of directly accessing the global `JvGeo` class,
@@ -41,7 +41,7 @@
 /// ## JvGeo class
 /// Main class providing the functionality. To be instantiated
 /// by invoking the constructor `evt.detail.JvGeo` in "jvgeo-ready" event.
-/// 
+///
 class JvGeo {
     // Geometry logic
     #initWidth
@@ -65,7 +65,7 @@ class JvGeo {
     // Rendering state
     #drawCtx
     #bInsideUserfuncDraw
-    
+
     // Mouse/Touch tracking
     #pointers
     #pointerPos
@@ -81,8 +81,7 @@ class JvGeo {
     /// - **width**, **height** (*Number*): Logical dimensions, only used as relative scale
     ///   for the initial placement of the drag points.
     ///
-    Init(divId, width, height)
-    {
+    Init(divId, width, height) {
         this.#initWidth = width
         this.#initHeight = height
         this.#initDragPoints = {}
@@ -104,7 +103,7 @@ class JvGeo {
         this.#domInputs = this.#domContainer.appendChild(document.createElement("div"))
         this.#domInputs.style.position = "absolute"
         this.#domInputs.style.display = "flex"
-        
+
         this.#domResetBtn = this.#domInputs.appendChild(document.createElement("button"))
         this.#domResetBtn.innerText = "Reset"
         this.#domResetBtn.onclick = () => this.Reset()
@@ -145,7 +144,7 @@ class JvGeo {
 
         this.#pointers = {}
         this.#pointerPos = null
-        
+
         this.#domCanvas.onpointerdown = (evt) => {
             evt.preventDefault()
             this.#pointers[evt.pointerId] = {
@@ -162,7 +161,7 @@ class JvGeo {
 
         this.#domCanvas.onpointermove = (evt) => {
             evt.preventDefault()
-            const pointer  = this.#pointers[evt.pointerId]
+            const pointer = this.#pointers[evt.pointerId]
             if (pointer) {
                 pointer.moveX = evt.offsetX - pointer.originX
                 pointer.moveY = evt.offsetY - pointer.originY
@@ -195,12 +194,11 @@ class JvGeo {
     /// - **initX**, **initY** (*Number*): Initial position, relative to
     ///   `width` and `height` given to  `Init()`.
     ///
-    AddDragPoint(name, initX, initY)
-    {
-        this.#initDragPoints[name] = {initX, initY}
+    AddDragPoint(name, initX, initY) {
+        this.#initDragPoints[name] = { initX, initY }
         const x = (initX / this.#initWidth) * this.#domCanvas.clientWidth
         const y = (initY / this.#initHeight) * this.#domCanvas.clientHeight
-        this.#dragPoints[name] = {x, y}
+        this.#dragPoints[name] = { x, y, pointerId: null }
     }
 
     /// ### JvGeo:AddInputRange(name, min, max, initValue, text)
@@ -212,12 +210,11 @@ class JvGeo {
     /// - **initValue** (*Number*): Initial value of the range.
     /// - **text** (*String|null*): Label used for display, where `{}` is replaced by the range's value.
     ///
-    AddInputRange(name, min, max, initValue, text=null)
-    {
+    AddInputRange(name, min, max, initValue, text = null) {
         if (text === null)
             text = `${name} = {}`
-        this.#initInputRanges[name] = {min, max, initValue, text}
-        
+        this.#initInputRanges[name] = { min, max, initValue, text }
+
         let elem = this.#inputRanges[name]
         if (elem === undefined) {
             this.#domInputs.appendChild(document.createElement("div")).style.width = "16px"
@@ -245,12 +242,11 @@ class JvGeo {
     /// - **initValue** (*Boolean*): Whether the checkbox is initially checked.
     /// - **text** (*String|null*): Label used for display.
     ///
-    AddCheckbox(name, initValue, text=null)
-    {
+    AddCheckbox(name, initValue, text = null) {
         if (text === null)
             text = name
-        this.#initInputCheckboxes[name] = {initValue, text}
-        
+        this.#initInputCheckboxes[name] = { initValue, text }
+
         let elem = this.#inputCheckboxes[name]
         if (elem === undefined) {
             this.#domInputs.appendChild(document.createElement("div")).style.width = "16px"
@@ -271,23 +267,22 @@ class JvGeo {
     ///
     /// Reinitializes the values of interactive elements (checkboxes, input ranges, draggable points...).
     ///
-    Reset()
-    {
+    Reset() {
         this.#dragPoints = {}
         for (const name in this.#initDragPoints) {
-            const {initX, initY} = this.#initDragPoints[name]
+            const { initX, initY } = this.#initDragPoints[name]
             const x = (initX / this.#initWidth) * this.#domCanvas.clientWidth
             const y = (initY / this.#initHeight) * this.#domCanvas.clientHeight
-            this.#dragPoints[name] = {x, y}
+            this.#dragPoints[name] = { x, y, pointerId: null }
         }
         for (const name in this.#initInputRanges) {
-            const {min, max, initValue, text} = this.#initInputRanges[name]
+            const { min, max, initValue, text } = this.#initInputRanges[name]
             const domInput = this.#inputRanges[name]
             domInput.value = initValue
             domInput.oninput()
         }
         for (const name in this.#initInputCheckboxes) {
-            const {initValue, text} = this.#initInputCheckboxes[name]
+            const { initValue, text } = this.#initInputCheckboxes[name]
             const domInput = this.#inputCheckboxes[name]
             domInput.checked = initValue
         }
@@ -296,15 +291,14 @@ class JvGeo {
     /// ### JvGeo:MainLoop(userfuncDraw)
     ///
     /// Setup the main loop which updates the drawing according to the user interactions.
-    /// 
-    /// - **userfuncDraw**: Function called every animation frame, 
+    ///
+    /// - **userfuncDraw**: Function called every animation frame,
     ///   which is given a dictionary as first argument containing the values
     ///   of all interactive elements, key-ed by the `name` given to
     ///   `AddDragPoint()`, `AddInputRange()`, `AddCheckbox`...
     ///   The coordinates of the draggable points are expressed in pixels.
     ///
-    async MainLoop(userfuncDraw)
-    {
+    async MainLoop(userfuncDraw) {
         while (true) {
             await new Promise(requestAnimationFrame)
 
@@ -314,8 +308,7 @@ class JvGeo {
             const newWidth = this.#domCanvas.clientWidth
             const oldHeight = this.#domCanvas.height
             const newHeight = this.#domCanvas.clientHeight
-            if (newWidth !== oldWidth || newHeight !== oldHeight)
-            {
+            if (newWidth !== oldWidth || newHeight !== oldHeight) {
                 for (const name in this.#dragPoints) {
                     const dragPoint = this.#dragPoints[name]
                     dragPoint.x *= newWidth / oldWidth
@@ -327,6 +320,7 @@ class JvGeo {
 
             // Update the drag points
 
+            let bDragging = false
             for (const pointerId in this.#pointers) {
                 const pointer = this.#pointers[pointerId]
                 if (pointer.dragPoint === null) {
@@ -345,12 +339,14 @@ class JvGeo {
                     }
                     pointer.dragPointOriginX = pointer.dragPoint.x
                     pointer.dragPointOriginY = pointer.dragPoint.y
+                    pointer.dragPoint.pointerId = pointerId
                 }
                 pointer.dragPoint.x = pointer.dragPointOriginX + pointer.moveX
                 pointer.dragPoint.y = pointer.dragPointOriginY + pointer.moveY
+                bDragging = true
             }
 
-            // Find nearest point
+            // Find nearest point from cursor (irrelevant of drag state)
 
             let nearestDragPointName = null
             let minDist = Infinity
@@ -384,9 +380,13 @@ class JvGeo {
             this.#bInsideUserfuncDraw = true
             userfuncDraw(userVars)
             for (const name in this.#dragPoints) {
-                const bIsNearest = name === nearestDragPointName
                 const pt = this.#dragPoints[name]
-                this.DrawPoint(pt.x, pt.y, name, bIsNearest ? "#88F" : "#00F")
+                if (!(pt.pointerId in this.#pointers))
+                    pt.pointerId = null
+                const bIsDragged = pt.pointerId !== null
+                const bIsNearest = name === nearestDragPointName
+                const bHighlighted = bDragging && bIsDragged || !bDragging && bIsNearest
+                this.DrawPoint(pt.x, pt.y, name, bHighlighted ? "#88F" : "#00F")
             }
             this.#bInsideUserfuncDraw = false
         }
@@ -402,8 +402,7 @@ class JvGeo {
     /// - **color** (*String* = `"#000"`): CSS color to be used for the stroke.
     /// - **thickness** (*Number* = `2`): Thickness, in pixels.
     ///
-    DrawSegment(xA, yA, xB, yB, color = "#000", thickness = 2)
-    {
+    DrawSegment(xA, yA, xB, yB, color = "#000", thickness = 2) {
         console.assert(this.#bInsideUserfuncDraw)
         const ctx = this.#drawCtx
         ctx.beginPath()
@@ -422,8 +421,7 @@ class JvGeo {
     /// - **x**, **y** (*Number*): Coordinates of the point, in pixels.
     /// - **color** (*String*): CSS color used to fill the point.
     ///
-    DrawPoint(x, y, name, color)
-    {
+    DrawPoint(x, y, name, color) {
         console.assert(this.#bInsideUserfuncDraw)
         const ctx = this.#drawCtx
         ctx.beginPath()
@@ -450,8 +448,7 @@ class JvGeo {
     /// - **color** (*String* = `"#000"`): CSS color to be used for the stroke.
     /// - **thickness** (*Number* = `2`): Thickness, in pixels.
     ///
-    DrawLine(xA, yA, xB, yB, color = "#000", thickness = 2)
-    {
+    DrawLine(xA, yA, xB, yB, color = "#000", thickness = 2) {
         const xAB = xB - xA, yAB = yB - yA
         const lenDiagonal = Math.hypot(this.#domCanvas.clientWidth, this.#domCanvas.clientHeight)
         const scale = lenDiagonal / Math.hypot(xAB, yAB)
@@ -469,8 +466,7 @@ class JvGeo {
     /// - **colorBG** (*String* = `"#0004"`): CSS color to be used for the filling.
     /// - **thickness** (*Number* = `2`): Thickness, in pixels.
     ///
-    DrawTriangle(xA, yA, xB, yB, xC, yC, colorFG = "#000", colorBG = "#0004", thickness = 2)
-    {
+    DrawTriangle(xA, yA, xB, yB, xC, yC, colorFG = "#000", colorBG = "#0004", thickness = 2) {
         console.assert(this.#bInsideUserfuncDraw)
         const ctx = this.#drawCtx
         ctx.beginPath()
@@ -495,15 +491,14 @@ class JvGeo {
     /// - **x3**, **y3**, **x4**, **y4**, (*Number*): Coordinates of the points
     ///   defining the second line, in pixels.
     ///
-    Intersect(x1, y1, x2, y2, x3, y3, x4, y4)
-    {
+    Intersect(x1, y1, x2, y2, x3, y3, x4, y4) {
         // Solving
         // x1 + alpha * (x2 - x1) = x3 + beta * (x4 - x3)
         // y1 + alpha * (y2 - y1) = y3 + beta * (y4 - y3)
         const num = (y4 - y3) * (x3 - x1) - (x4 - x3) * (y3 - y1)
         const denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1)
         const alpha = num / denom
-        return [ x1 + alpha * (x2 - x1) , y1 + alpha * (y2 - y1) ]
+        return [x1 + alpha * (x2 - x1), y1 + alpha * (y2 - y1)]
     }
 
     /// ### JvGeo:NormalizedParallelVec(x, y, len=1.0) -> [xV, yV]
@@ -515,8 +510,7 @@ class JvGeo {
     /// - **len** (*Number* = `1.0`): Length of the returned vector.
     ///   By default, returns a unit vector.
     ///
-    NormalizedParallelVec(x, y, len=1.0)
-    {
+    NormalizedParallelVec(x, y, len = 1.0) {
         const scale = len / Math.hypot(x, y)
         return [x * scale, y * scale]
     }
@@ -530,12 +524,11 @@ class JvGeo {
     /// - **len** (*Number* = `1.0`): Length of the returned vector.
     ///   By default, returns a unit vector.
     ///
-    NormalizedPerpendicularVec(x, y, len=1.0)
-    {
+    NormalizedPerpendicularVec(x, y, len = 1.0) {
         const scale = len / Math.hypot(x, y)
         return [y * scale, x * -scale]
     }
-}   
+}
 
 document.addEventListener("DOMContentLoaded", () => {
     document.dispatchEvent(new CustomEvent("jvgeo-ready", { detail: { JvGeo } }))
