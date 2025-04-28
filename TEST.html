@@ -149,10 +149,13 @@
     <script>
         document.addEventListener("jvgeo-ready", evt => {
             const jvgeo = new evt.detail.JvGeo()
-            jvgeo.Init("cartesian-coords", -2, 6, -2, 6)
+            jvgeo.Init("cartesian-coords", -10, 10, -2, 6)
             jvgeo.AddDragPoint("A", 3, 2)
             jvgeo.MainLoop(({ A }) => {
                 jvgeo.DrawCoordSystem()
+                A.label = `x=${A.x.toFixed(2)} ; y=${A.y.toFixed(2)}`
+                jvgeo.DrawSegment(0, A.y, A.x, A.y)
+                jvgeo.DrawSegment(A.x, 0, A.x, A.y)
             })
         })
     </script>

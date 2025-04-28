@@ -243,7 +243,7 @@ class JvGeo {
     ///
     AddDragPoint(name, initX, initY) {
         this.#initDragPoints[name] = { initX, initY }
-        this.#dragPoints[name] = { x: initX, y: initY, pointerId: null }
+        this.#dragPoints[name] = { x: initX, y: initY, label: name, pointerId: null }
     }
 
     /// ### JvGeo:AddInputRange(name, min, max, initValue, text)
@@ -316,7 +316,7 @@ class JvGeo {
         this.#dragPoints = {}
         for (const name in this.#initDragPoints) {
             const { initX, initY } = this.#initDragPoints[name]
-            this.#dragPoints[name] = { x: initX, y: initY, pointerId: null }
+            this.#dragPoints[name] = { x: initX, y: initY, label: name, pointerId: null }
         }
         for (const name in this.#initInputRanges) {
             const { min, max, initValue, text } = this.#initInputRanges[name]
@@ -429,7 +429,7 @@ class JvGeo {
                 const bIsDragged = pt.pointerId !== null
                 const bIsNearest = name === nearestDragPointName
                 const bHighlighted = bDragging && bIsDragged || !bDragging && bIsNearest
-                this.DrawPoint(pt.x, pt.y, name, bHighlighted ? "#88F" : "#00F")
+                this.DrawPoint(pt.x, pt.y, pt.label, bHighlighted ? "#88F" : "#00F")
             }
             this.#bInsideUserfuncDraw = false
         }
@@ -478,9 +478,12 @@ class JvGeo {
         ctx.fill()
         ctx.stroke()
         ctx.fillStyle = "#000"
+        ctx.strokeStyle = "#FFF"
+        ctx.lineWidth = 5
         ctx.font = "bold 16px sans-serif"
         ctx.textAlign = "center"
         ctx.textBaseline = "bottom"
+        ctx.strokeText(name, px, py - 2 * 8)
         ctx.fillText(name, px, py - 2 * 8)
     }
 
