@@ -143,6 +143,19 @@
 
     <br />
 
+    <h2>Cartesian coordinates</h2>
+
+    <div id="cartesian-coords" style="max-height:300px;border: 2px solid #CCC"></div>
+    <script>
+        document.addEventListener("jvgeo-ready", evt => {
+            const jvgeo = new evt.detail.JvGeo()
+            jvgeo.Init("cartesian-coords", -2, 6, -2, 6)
+            jvgeo.AddDragPoint("A", 3, 2)
+            jvgeo.MainLoop(({ A }) => {
+                jvgeo.DrawCoordSystem()
+            })
+        })
+    </script>
     <script src="jvgeo.js" defer></script>
 </body>
 

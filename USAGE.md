@@ -147,6 +147,10 @@ be called from inside the `userfuncDraw` given to `MainLoop()`.
 - **colorBG** (*String* = `"#0004"`): CSS color to be used for the filling.
 - **thickness** (*Number* = `2`): Thickness, in pixels.
 
+### JvGeo:DrawCoordSystem()
+
+Draws the cartesian coordinate system grid and axes.
+
 ### JvGeo:Intersect(x1, y1, x2, y2, x3, y3, x4, y4) -> [xI, yI]
 
 Returns **[xI, yI]** the coordinates of the intersection point between two lines,

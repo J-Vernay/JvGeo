@@ -513,10 +513,10 @@ class JvGeo {
     /// - **thickness** (*Number* = `2`): Thickness, in pixels.
     ///
     DrawTriangle(xA, yA, xB, yB, xC, yC, colorFG = "#000", colorBG = "#0004", thickness = 2) {
+        console.assert(this.#bInsideUserfuncDraw)
         const [pxA, pyA] = this.CoordToPixel(xA, yA)
         const [pxB, pyB] = this.CoordToPixel(xB, yB)
         const [pxC, pyC] = this.CoordToPixel(xC, yC)
-        console.assert(this.#bInsideUserfuncDraw)
         const ctx = this.#drawCtx
         ctx.beginPath()
         ctx.fillStyle = colorBG
@@ -528,6 +528,78 @@ class JvGeo {
         ctx.lineTo(pxA, pyA)
         ctx.fill()
         ctx.stroke()
+    }
+
+
+    /// ### JvGeo:DrawCoordSystem()
+    ///
+    /// Draws the cartesian coordinate system grid and axes.
+    ///
+    DrawCoordSystem() {
+        console.assert(this.#bInsideUserfuncDraw)
+        const ctx = this.#drawCtx
+
+        for (let x = this.#xMin; x < this.#xMax; ++x) {
+            this.DrawSegment(x, this.#yMin, x, this.#yMax, "#CCC", 2)
+            if (x == 0)
+                continue
+            const [px, py] = this.CoordToPixel(x, 0)
+            ctx.fillStyle = "#555"
+            ctx.strokeStyle = "#FFF"
+            ctx.lineWidth = 5
+            ctx.font = "bold 12px sans-serif"
+            ctx.textAlign = "center"
+            ctx.textBaseline = "bottom"
+            ctx.strokeText(`${x}`, px, py - 2)
+            ctx.fillText(`${x}`, px, py - 2)
+
+        }
+        for (let y = this.#yMin; y < this.#yMax; ++y) {
+            this.DrawSegment(this.#xMin, y, this.#xMax, y, "#CCC", 2)
+            if (y == 0)
+                continue
+            const [px, py] = this.CoordToPixel(0, y)
+            ctx.fillStyle = "#555"
+            ctx.strokeStyle = "#FFF"
+            ctx.lineWidth = 5
+            ctx.font = "bold 12px sans-serif"
+            ctx.textAlign = "right"
+            ctx.textBaseline = "middle"
+            ctx.strokeText(`${y}`, px - 4, py)
+            ctx.fillText(`${y}`, px - 4, py)
+        }
+
+        const [px0, py0] = this.CoordToPixel(0, 0)
+        const pxMax = this.#domCanvas.clientWidth
+        const pyMax = this.#domCanvas.clientHeight
+
+        // X-Axis
+        ctx.beginPath()
+        ctx.fillStyle = "#555"
+        ctx.lineWidth = 0
+        ctx.moveTo(0, py0 - 2)
+        ctx.lineTo(pxMax - 10, py0 - 2)
+        ctx.lineTo(pxMax - 10, py0 - 10)
+        ctx.lineTo(pxMax, py0)
+        ctx.lineTo(pxMax - 10, py0 + 10)
+        ctx.lineTo(pxMax - 10, py0 + 2)
+        ctx.lineTo(0, py0 + 2)
+        ctx.closePath()
+        ctx.fill()
+
+        // Y-Axis
+        ctx.beginPath()
+        ctx.fillStyle = "#555"
+        ctx.lineWidth = 0
+        ctx.moveTo(px0 - 2, 0)
+        ctx.lineTo(px0 - 2, pyMax - 10)
+        ctx.lineTo(px0 - 10, pyMax - 10)
+        ctx.lineTo(px0, pyMax)
+        ctx.lineTo(px0 + 10, pyMax - 10)
+        ctx.lineTo(px0 + 2, pyMax - 10)
+        ctx.lineTo(px0 + 2, 0)
+        ctx.closePath()
+        ctx.fill()
     }
 
     /// ### JvGeo:Intersect(x1, y1, x2, y2, x3, y3, x4, y4) -> [xI, yI]
